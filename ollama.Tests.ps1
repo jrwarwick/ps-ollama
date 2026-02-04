@@ -156,18 +156,17 @@ Describe 'Get-OllamaModel' {
 Describe 'Get-OllamaRunningModel' {
     It 'Should return list of running models' {
         Mock Invoke-RestMethod {
-            return @{
-                models = @(
-                    @{
-                        name = 'llama3.2:latest'
-                        size = 4000000000
-                        expires_at = '2024-01-01T00:00:00Z'
-                    }
-                )
+            $model = [PSCustomObject]@{
+                name = 'llama3.2:latest'
+                size = 4000000000
+                expires_at = '2024-01-01T00:00:00Z'
+            }
+            return [PSCustomObject]@{
+                models = @($model)
             }
         } -ModuleName ollama
 
-        $result = Get-OllamaRunningModel
+        $result = @(Get-OllamaRunningModel)
         $result | Should -HaveCount 1
         $result[0].name | Should -Be 'llama3.2:latest'
     }
@@ -344,11 +343,11 @@ Describe 'Invoke-OllamaChat' {
 Describe 'Get-OllamaEmbedding' {
     It 'Should generate embeddings for text input' {
         Mock Invoke-RestMethod {
-            return @{
+            # Use comma operator to preserve nested array structure
+            $embedding = @(0.1, 0.2, 0.3, 0.4, 0.5)
+            return [PSCustomObject]@{
                 model = 'nomic-embed-text'
-                embeddings = @(
-                    @(0.1, 0.2, 0.3, 0.4, 0.5)
-                )
+                embeddings = , $embedding
             }
         } -ModuleName ollama
 
@@ -359,12 +358,12 @@ Describe 'Get-OllamaEmbedding' {
 
     It 'Should handle multiple inputs' {
         Mock Invoke-RestMethod {
-            return @{
+            # Use explicit array construction to preserve nested arrays
+            $emb1 = @(0.1, 0.2, 0.3)
+            $emb2 = @(0.4, 0.5, 0.6)
+            return [PSCustomObject]@{
                 model = 'nomic-embed-text'
-                embeddings = @(
-                    @(0.1, 0.2, 0.3)
-                    @(0.4, 0.5, 0.6)
-                )
+                embeddings = @($emb1, $emb2)
             }
         } -ModuleName ollama
 
@@ -374,7 +373,8 @@ Describe 'Get-OllamaEmbedding' {
 
     It 'Should include truncate option when specified' {
         Mock Invoke-RestMethod {
-            return @{ embeddings = @(@(0.1)) }
+            $embedding = @(0.1)
+            return [PSCustomObject]@{ embeddings = , $embedding }
         } -ModuleName ollama
 
         Get-OllamaEmbedding -Model 'nomic-embed-text' -Input 'Test' -Truncate
