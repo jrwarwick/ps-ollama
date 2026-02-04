@@ -406,15 +406,24 @@ Describe 'Parameter Validation' {
         { Invoke-OllamaGenerate -Model 'test' -Prompt 'test' -Temperature -1.0 } | Should -Throw
     }
 
-    It 'Should require Model parameter for generation' {
-        { Invoke-OllamaGenerate -Prompt 'test' } | Should -Throw
+    It 'Should have Model as mandatory parameter for generation' {
+        $cmd = Get-Command Invoke-OllamaGenerate
+        $param = $cmd.Parameters['Model']
+        $param.Attributes | Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] } |
+            ForEach-Object { $_.Mandatory } | Should -Contain $true
     }
 
-    It 'Should require Prompt parameter for generation' {
-        { Invoke-OllamaGenerate -Model 'test' } | Should -Throw
+    It 'Should have Prompt as mandatory parameter for generation' {
+        $cmd = Get-Command Invoke-OllamaGenerate
+        $param = $cmd.Parameters['Prompt']
+        $param.Attributes | Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] } |
+            ForEach-Object { $_.Mandatory } | Should -Contain $true
     }
 
-    It 'Should require Model parameter for chat' {
-        { Invoke-OllamaChat -Message 'test' } | Should -Throw
+    It 'Should have Model as mandatory parameter for chat' {
+        $cmd = Get-Command Invoke-OllamaChat
+        $param = $cmd.Parameters['Model']
+        $param.Attributes | Where-Object { $_ -is [System.Management.Automation.ParameterAttribute] } |
+            ForEach-Object { $_.Mandatory } | Should -Contain $true
     }
 }
